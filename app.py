@@ -3,11 +3,15 @@ from bs4 import BeautifulSoup
 import pprint
 import csv
 import time
-from selenium import webdriver 
+from selenium import webdriver
+import urllib.request
 
-# Set headers
-headers = requests.utils.default_headers()
-headers.update({ 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'})
+# # Set headers
+# headers = requests.utils.default_headers()
+# headers.update({ 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'})
+class AppURLopener(urllib.request.FancyURLopener):
+    version = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.69 Safari/537.36"
+urllib._urlopener = AppURLopener()
 
 browser = webdriver.Chrome('C:\\Users\\demmy\\Downloads\\chromedriver_win32\\chromedriver.exe')
 
@@ -25,8 +29,6 @@ writer = csv.writer(file)
 #give excel an header
 writer.writerow(['Product Name', 'Brand','Price', 'Image'])
 
-
-#loop to go through each url 
 for url in urls:
     browser.get(url)
     browser.maximize_window()
@@ -34,6 +36,12 @@ for url in urls:
     #added a wait to this to slow it down 
     time.sleep(10)
     images = soup.findAll('img')[1].get('src')
+    imagesName = soup.find('span', class_='base').get_text().strip()
+    fullName = imagesName + ".jpg"
+    print(f"******THIS IS GOING TO CAUSE ERROR!*****\n ----- {images} \n ----- {fullName}")
+    time.sleep(10)
+    urllib._urlopener.retrieve(images, fullName)
+
     name = soup.find('span', class_='base').get_text().strip()
     productPrice = 60
     brand = soup.select_one('tr:nth-child(2) > td:nth-child(2)').get_text().strip()
@@ -41,13 +49,13 @@ for url in urls:
     #write to excel sheet 
     writer.writerow([name, brand, productPrice, images])
 file.close()
-# Close the browser after every run 
+
 browser.close()
 
 
-#to-do
-# save the images into a folder 
-# save the name of images a s name of product 
+# #to-do
+# # save the images into a folder 
+# # save the name of images a s name of product 
 
 
 
